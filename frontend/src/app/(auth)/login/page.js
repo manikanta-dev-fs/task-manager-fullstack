@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthForm from "components/AuthForm";
 import { useAuth } from "context/AuthContext";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,4 +28,12 @@ export default function LoginPage() {
   };
 
   return <AuthForm type="login" onSubmit={handleSubmit} loading={loading} error={error} />;
+}
+
+export default function LoginPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
+  );
 }
