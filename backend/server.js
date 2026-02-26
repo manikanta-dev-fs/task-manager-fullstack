@@ -12,6 +12,23 @@ const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');
 const app = express();
 
 const PORT = Number(process.env.PORT) || 5000;
+const allowedOrigins = [
+  'https://task-manager-fullstack-git-main-manikanta-dev-fs-projects.vercel.app',
+  'https://task-manager-fullstack-frl1vb0wv-manikanta-dev-fs-projects.vercel.app',
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+};
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is not defined');
@@ -26,12 +43,8 @@ if (!process.env.ENCRYPTION_KEY || Buffer.byteLength(process.env.ENCRYPTION_KEY,
   process.exit(1);
 }
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(mongoSanitize());
