@@ -1,14 +1,6 @@
-﻿const User = require('../models/User');
+const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
-
-const isProd = process.env.NODE_ENV === 'production';
-
-const cookieOptions = {
-  httpOnly: true,
-  secure: isProd,
-  sameSite: isProd ? 'none' : 'lax',
-  maxAge: 24 * 60 * 60 * 1000,
-};
+const { cookieOptions, clearCookieOptions } = require('../config/appConfig');
 
 const register = async (req, res, next) => {
   try {
@@ -112,11 +104,7 @@ const login = async (req, res, next) => {
 };
 
 const logout = async (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-  });
+  res.clearCookie('token', clearCookieOptions);
 
   return res.status(200).json({
     success: true,
