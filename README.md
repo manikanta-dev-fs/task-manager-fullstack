@@ -57,6 +57,11 @@ Request flow:
 - JWT Authentication (HTTP-only cookies)
 - AES-256-CBC encryption for task descriptions
 - express-mongo-sanitize for NoSQL injection protection
+- Helmet security middleware
+- Express rate limiting (global + auth)
+- Joi request validation
+- Health checks (`/health/live`, `/health/ready`)
+- Pino structured logging with request IDs
 
 ## Folder Structure
 
@@ -309,6 +314,45 @@ Response (200):
 6. Startup-time environment variable validation (including encryption key length).
 7. CORS restricted to configured client origin with credentials.
 8. User-scoped task ownership enforcement for all task operations.
+
+## Production Security & Observability
+
+### Implemented Middleware and Controls
+
+- `helmet` enabled for production-safe security headers.
+- Global burst protection limiter enabled (`express-rate-limit`).
+- Auth-specific limiter enabled on `/api/auth/*` to protect login/register endpoints.
+- `express-mongo-sanitize` enabled for NoSQL injection mitigation.
+- Request validation enabled with Joi for auth and task routes.
+- Structured logging enabled with `pino`.
+- Request correlation enabled via request IDs (`X-Request-Id`) on every response.
+
+### Health Endpoints
+
+- `GET /health/live`
+  Returns service liveness.
+
+- `GET /health/ready`
+  Returns readiness status and verifies MongoDB connectivity (`ping`).
+
+Example success response (`/health/live`):
+```json
+{
+  "success": true,
+  "status": "live",
+  "uptime": 123.45,
+  "timestamp": "2026-02-26T12:00:00.000Z"
+}
+```
+
+Example success response (`/health/ready`):
+```json
+{
+  "success": true,
+  "status": "ready",
+  "db": "connected"
+}
+```
 
 ## Deployment
 
