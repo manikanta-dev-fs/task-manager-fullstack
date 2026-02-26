@@ -1,5 +1,6 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const Task = require('../models/Task');
+const { encrypt, decrypt } = require('../utils/encrypt');
 
 const parsePagination = (pageQuery, limitQuery) => {
   const page = Math.max(parseInt(pageQuery, 10) || 1, 1);
@@ -11,6 +12,7 @@ const mapTaskResponse = (task) => {
   const taskObj = task.toObject ? task.toObject() : task;
   return {
     ...taskObj,
+    description: decrypt(taskObj.description),
     status: taskObj.completed ? 'completed' : 'pending',
   };
 };
@@ -26,9 +28,11 @@ const createTask = async (req, res, next) => {
       });
     }
 
+    const normalizedDescription = description ? String(description).trim() : '';
+
     const task = await Task.create({
       title: String(title).trim(),
-      description: description ? String(description).trim() : '',
+      description: encrypt(normalizedDescription),
       completed: false,
       user: req.user._id,
     });
@@ -111,7 +115,7 @@ const updateTask = async (req, res, next) => {
     }
 
     if (req.body.description !== undefined) {
-      updatePayload.description = String(req.body.description).trim();
+      updatePayload.description = encrypt(String(req.body.description).trim());
     }
 
     if (req.body.status !== undefined) {

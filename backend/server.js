@@ -1,6 +1,7 @@
-﻿const express = require('express');
+const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const mongoSanitize = require('express-mongo-sanitize');
 require('dotenv').config();
 
 const connectDB = require('./src/config/db');
@@ -21,6 +22,11 @@ if (!process.env.MONGO_URI) {
   throw new Error('MONGO_URI is not defined');
 }
 
+if (!process.env.ENCRYPTION_KEY || Buffer.byteLength(process.env.ENCRYPTION_KEY, 'utf8') !== 32) {
+  console.error('ENCRYPTION_KEY must be defined as a 32-byte string');
+  process.exit(1);
+}
+
 app.use(
   cors({
     origin: CLIENT_URL,
@@ -29,6 +35,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(mongoSanitize());
 
 app.get('/', (req, res) => {
   res.status(200).json({
