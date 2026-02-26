@@ -7,6 +7,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMe = useCallback(async () => {
@@ -36,9 +37,19 @@ export function AuthProvider({ children }) {
     const bootstrap = async () => {
       try {
         const response = await api.get("/api/auth/me");
-        if (mounted) setUser(response.data.data || null);
-      } catch {
-        if (mounted) setUser(null);
+        if (mounted) {
+          setUser(response.data.data || null);
+          setError("");
+        }
+      } catch (err) {
+        if (!mounted) return;
+
+        if (err.response?.status === 401) {
+          setUser(null);
+          setError("");
+        } else {
+          setError(err.response?.data?.message || "Something went wrong");
+        }
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -60,8 +71,9 @@ export function AuthProvider({ children }) {
       logout,
       fetchMe,
       setUser,
+      error,
     }),
-    [user, isLoading, login, register, logout, fetchMe]
+    [user, isLoading, login, register, logout, fetchMe, error]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
