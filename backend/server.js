@@ -12,8 +12,6 @@ const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');
 const app = express();
 
 const PORT = Number(process.env.PORT) || 5000;
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
-const ALLOWED_ORIGINS = CLIENT_URL.split(',').map((origin) => origin.trim()).filter(Boolean);
 
 if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is not defined');
@@ -30,11 +28,7 @@ if (!process.env.ENCRYPTION_KEY || Buffer.byteLength(process.env.ENCRYPTION_KEY,
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-      return callback(new Error('Not allowed by CORS'));
-    },
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
