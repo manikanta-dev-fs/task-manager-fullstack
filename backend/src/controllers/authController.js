@@ -1,10 +1,12 @@
 ﻿const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
   maxAge: 24 * 60 * 60 * 1000,
 };
 
@@ -112,8 +114,8 @@ const login = async (req, res, next) => {
 const logout = async (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
   });
 
   return res.status(200).json({
